@@ -13,4 +13,6 @@ __pycache__/
 env/
 venv/
 .venv/
-bot.log
+*.log
+*.db
+show_db.py

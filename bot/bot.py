@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-import logging, json
-
+from repository import save_messages  # Импортируем только функцию-обертку
 
 def create_bot():
     intents = discord.Intents.default()
@@ -28,22 +27,29 @@ def create_bot():
 
     @bot.command()
     async def check(ctx, limit: int = 100):
-        """Сохраняет историю канала в файл"""
-        await ctx.send("Начинаю выгрузку...")
+        await ctx.send("Собираю сообщения из канала...")
         
-        messages = []
+        messages_data = []
         async for message in ctx.channel.history(limit=limit):
-            messages.append({
-                "id": message.id,
-                "author": message.author.name,
-                "content": message.content,
-                "timestamp": str(message.created_at)
-            })
+            if message.content.strip(): 
+                messages_data.append({
+                    "id": message.id,
+                    "channel_id": ctx.channel.id,
+                    "author": message.author.name,
+                    "content": message.content,
+                    "timestamp": message.created_at
+                })
         
-        filename = f"channel_{ctx.channel.id}_messages.json"
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(messages, f, ensure_ascii=False, indent=2)
-        
-        await ctx.send(f"Сохранено {len(messages)} сообщений в {filename}")
+        if not messages_data:
+            await ctx.send("Сообщений для сохранения не найдено.")
+            return
+
+        await ctx.send("Сохраняю в базу данных...")
+        try:
+            saved_count = await save_messages(messages_data)
+            await ctx.send(f"Успешно сохранено/обновлено **{saved_count}** сообщений.")
+        except Exception as e:
+            await ctx.send(f"Произошла ошибка при записи в БД. Проверьте логи.")
+            print(f"DB Error: {e}")
 
     return bot
