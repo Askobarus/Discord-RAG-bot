@@ -16,3 +16,5 @@ venv/
 *.log
 *.db
 show_db.py
+*.db-shm
+*.db-wal

@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from repository import save_messages  # Импортируем только функцию-обертку
+from repository import save_messages 
+from schemas.messages import SMessage
 
 def create_bot():
     intents = discord.Intents.default()
@@ -31,14 +32,9 @@ def create_bot():
         
         messages_data = []
         async for message in ctx.channel.history(limit=limit):
-            if message.content.strip(): 
-                messages_data.append({
-                    "id": message.id,
-                    "channel_id": ctx.channel.id,
-                    "author": message.author.name,
-                    "content": message.content,
-                    "timestamp": message.created_at
-                })
+            msg = SMessage.from_discord_message(message, ctx.channel.id)
+            if msg:  # Пропускаем пустые сообщения
+                messages_data.append(msg.model_dump())
         
         if not messages_data:
             await ctx.send("Сообщений для сохранения не найдено.")
