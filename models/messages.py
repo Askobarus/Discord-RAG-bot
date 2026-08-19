@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, Mapped, mapped_column
-from sqlalchemy import Index, String, LargeBinary
+from sqlalchemy import Index, String, Integer
 from datetime import datetime
 
 
@@ -22,4 +22,4 @@ class ChunkModel(Base):
     channel_id: Mapped[str] = mapped_column(String(50))
     message_ids: Mapped[str] = mapped_column(String(500)) # "123,124,125"
     content: Mapped[str] = mapped_column(String(4000))    # Склеенный текст диалога
-    embedding: Mapped[bytes] = mapped_column(LargeBinary) # Вектор как BLOB
+    created_at: Mapped[int] = mapped_column(Integer) # Unix timestamp
